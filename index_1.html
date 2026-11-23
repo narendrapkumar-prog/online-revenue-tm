@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Online Revenue Task Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f6f4;--card:#fff;--ink:#1d1d1f;--mut:#6b6b70;--line:#e6e5e1;--acc:#d9480f;--acc2:#fff1e8;
+--L:#c92a2a;--R:#2b8a3e;--P:#1971c2;--C:#e67700;--ok:#2b8a3e}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+nav{background:#18191c;color:#ddd;padding:18px 12px;display:flex;flex-direction:column;gap:2px}
+nav h1{font-size:15px;color:#fff;margin:0 8px 4px}nav .sub{font-size:11px;color:#888;margin:0 8px 16px}
+nav a{color:#ccc;text-decoration:none;padding:8px 10px;border-radius:8px;display:flex;justify-content:space-between}
+nav a.on,nav a:hover{background:#2a2b30;color:#fff}nav .b{background:var(--acc);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;line-height:18px}
+nav .who{margin-top:auto;font-size:12px;color:#999;padding:8px}nav select{width:100%;margin-top:6px;padding:6px;border-radius:6px;background:#2a2b30;color:#fff;border:0}
+main{padding:24px 28px;max-width:1200px}
+h2{margin:0 0 4px;font-size:22px}.lead{color:var(--mut);margin:0 0 18px}
+.grid{display:grid;gap:14px}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:2fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.task{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}.task:first-of-type{border-top:0}
+.task .t{flex:1}.task .ti{font-weight:500}.meta{font-size:12px;color:var(--mut);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+.chk{width:18px;height:18px;border:2px solid #bbb;border-radius:5px;cursor:pointer;flex:none;margin-top:1px;background:#fff}
+.chk:hover{border-color:var(--ok)}
+.tag{font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid var(--line);background:#fafafa}
+.tL{color:var(--L);border-color:#f3c4c4;background:#fff5f5}.tR{color:var(--R);border-color:#c3e6cb;background:#f3fbf5}
+.tP{color:var(--P);border-color:#c5dcf3;background:#f2f8fe}.tC{color:var(--C);border-color:#f5d9a8;background:#fff9ef}
+.late{color:var(--L);font-weight:600}.score{font-size:11px;font-weight:700;color:#fff;background:#444;border-radius:6px;padding:1px 6px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit;font-size:13px}
+.btn.p{background:var(--acc);color:#fff;border-color:var(--acc)}.btn.s{padding:3px 9px;font-size:12px}.btn:hover{filter:brightness(.96)}
+.kpi{font-size:26px;font-weight:700}.kl{font-size:12px;color:var(--mut)}
+.bar{height:8px;background:#eee;border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--acc)}
+table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:7px 6px;border-top:1px solid var(--line);font-size:13px;vertical-align:top}th{color:var(--mut);font-weight:500;border-top:0}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.banner{background:var(--acc2);border:1px solid #ffd8bf;border-radius:12px;padding:12px 16px;margin-bottom:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:9}
+.modal.on{display:flex}.mbox{background:#fff;border-radius:14px;padding:20px;width:min(560px,94vw);max-height:90vh;overflow:auto}
+.mbox h3{margin:0 0 12px}label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}
+input,select,textarea{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.right{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.empty{color:var(--mut);font-size:13px;padding:8px 0}.src{font-size:11px;color:#888}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:8px;display:none;z-index:10}
+.v-Scale{color:var(--ok);font-weight:600}.v-Stop{color:var(--L);font-weight:600}.v-Retest{color:var(--C);font-weight:600}
+@media(max-width:800px){.app{grid-template-columns:1fr}nav{flex-direction:row;overflow:auto;padding:8px}nav h1,nav .sub{display:none}nav .who{margin:0}
+.g3,.g2,.cols,.row,.row3{grid-template-columns:1fr}main{padding:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav>
+  <h1>Online Revenue</h1><div class="sub">Task Manager · Prototype v0</div>
+  <a href="#today" data-v="today">Today</a>
+  <a href="#week" data-v="week">Week board</a>
+  <a href="#goals" data-v="goals">Quarter goals</a>
+  <a href="#month" data-v="month">Monthly targets</a>
+  <a href="#laundry" data-v="laundry">Laundry list <span class="b" id="lb" style="background:#555"></span></a>
+  <a href="#inbox" data-v="inbox">Inbox <span class="b" id="ib"></span></a>
+  <a href="#routines" data-v="routines">Routines</a>
+  <a href="#bs" data-v="bs">BS Tasks (Bhargav) <span class="b" id="bsb" style="background:#555"></span></a>
+  <a href="#done" data-v="done">Completed</a>
+  <a href="#team" data-v="team">Team</a>
+  <div class="who"><label style="color:#ccc;display:flex;gap:6px;align-items:center;margin-bottom:8px"><input type="checkbox" id="mo" style="width:auto"> Only my tasks</label>Viewing as<select id="me"><option>Narendra</option><option>Ashok</option><option>Gyanendra</option></select></div>
+</nav>
+<main id="v"></main>
+</div>
+<div class="modal" id="m"><div class="mbox" id="mb"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const TODAY=(()=>{const x=new Date();x.setHours(9,0,0,0);return x})();let mineOnly=false;let dF={per:'week',who:'All',q:'',open:{}};const WIP=10;let rDone={};
+const PEOPLE=['Narendra','Ashok','Gyanendra'];
+const CAT={L:['Leadership',40],R:['Revenue',30],P:['Platform',20],C:['Crisis',10]};
+const GOALS=[
+ {id:'G1',t:'Monthly revenue delivery vs revised FY27 AOP',kpi:'Nov GMV vs AOP',target:100,actual:91,unit:'%'},
+ {id:'G2',t:'Ads & discount efficiency',kpi:'Ad ROI / discount %',target:100,actual:60,unit:'% plan'},
+ {id:'G3',t:'Zomato Growmaxx / SGM scale',kpi:'SGM outlets live',target:100,actual:55,unit:'% plan'},
+ {id:'G4',t:'New launches & menu (Momo Shomo, combos, protein)',kpi:'Momo sale/month',target:100,actual:40,unit:'% of ₹1L'},
+ {id:'G5',t:'Dashboards & automation',kpi:'Dashboards live',target:4,actual:1,unit:'of 4'},
+ {id:'G6',t:'Team & capability (hiring, handover, webinar)',kpi:'Milestones',target:3,actual:1,unit:'of 3'}];
+let id=100;const d=s=>new Date(s+'T18:00:00');
+const T=(t,o,g,c,due,x={})=>({id:++id,t,o,g,c,due:d(due),st:'todo',src:'BS Tasks',presence:false,boost:0,att:[],needAtt:false,card:null,...x});
+let tasks=[
+ T('Swiggy meeting agenda + document','Narendra','G2','P','2026-11-17',{src:'Master sheet'}),
+ T('Franchise webinar PPT + date final','Narendra','G6','L','2026-11-17',{src:'Master sheet'}),
+ T('Kabir mail reply: new draft','Narendra','G2','L','2026-11-16',{src:'Gmail'}),
+ T('Close Swish commercials','Narendra','G4','P','2026-11-07'),
+ T('Growmaxx equivalent on Swiggy','Gyanendra','G3','R','2026-11-07'),
+ T('Offer list for new store ramp-up','Ashok','G2','R','2026-11-07'),
+ T('Sarjapur: reduce discount, increase AOV','Ashok','G1','R','2026-11-07'),
+ T('Price cohorts (39 stores)','Gyanendra','G1','R','2026-11-12'),
+ T('Discount sensitivity analysis','Gyanendra','G2','R','2026-11-12'),
+ T('Stock-out & downtime reasoning from field coaches','Ashok','G1','C','2026-11-13'),
+ T('Momo Shomo scale-up initiatives','Ashok','G4','R','2026-11-18',{src:'Master sheet'}),
+ T('Protein tagging on delivery platforms','Ashok','G4','R','2026-11-18',{src:'Master sheet'}),
+ T('Mohit dashboard deployment','Narendra','G5','L','2026-11-18',{src:'Master sheet'}),
+ T('Brand-level baseline for Growmaxx','Gyanendra','G3','R','2026-11-19',{src:'Master sheet'}),
+ T('SGM halt analysis (stores where stopped)','Gyanendra','G3','R','2026-11-20',{src:'Master sheet'}),
+ T('Swiggy clicks reconciliation vs deductions','Gyanendra','G2','P','2026-11-20',{src:'Master sheet'}),
+ T('AOP revise FY27 revenue','Narendra','G1','L','2026-11-21',{src:'Master sheet'}),
+ T('Department PnL making','Narendra','G1','L','2026-11-25',{src:'Master sheet'}),
+ T('Gyanendra handover plan (before exit)','Narendra','G6','L','2026-11-24',{src:'Master sheet'}),
+ T('Interview: Prateek Bajpai (Revenue Associate)','Narendra','G6','L','2026-11-17',{src:'Calendar',presence:true}),
+ T('Zomato party combos live + Gold extra 10%','Ashok','G4','P','2026-11-19',{src:'Master sheet'}),
+ T('Reduce food cost','Narendra','G1','R','2026-11-30'),
+ T('Magicpin removal of listings','Ashok',null,'C','2026-11-01'),
+ T('Kabir D&G list 2: send reply on pts 43, 44, 46 (draft ready in Gmail)','Narendra','G1','L','2026-11-22',{src:'Gmail',boost:1}),
+ T('Kabir MIS: GrowMaxx actual cashback Apr-Oct, month-wise, Zomato + Swiggy statements (via Bhargav)','Narendra','G3','L','2026-11-23',{src:'Gmail',boost:1}),
+ T('Discount dashboard: make Swiggy discount bifurcation live (Zomato done) + update Kabir','Narendra','G5','L','2026-11-24',{src:'Gmail'}),
+ T('Swiggy 2% fee briefing to franchisees: close with Bhargav + Rajat','Narendra','G6','L','2026-11-28',{src:'Gmail'}),
+ T('Swiggy refunds: get non-genuine refunds reversed, cover in Swiggy growth webinar','Narendra','G2','P','2026-11-30',{src:'Gmail'}),
+ T('Aggregator charges: Zomato + Swiggy category P&L vs ours; senior Zomato meet if overpaying','Narendra','G2','L','2026-11-30',{src:'Gmail'}),
+ T('Kabir pt 45: franchisee webinar plan with dates (CM, discounting, territory margins, delivery)','Narendra','G6','L','2026-12-01',{src:'Gmail'}),
+ T('Stop ads on zero-sale / closed stores (Channi Jammu, Mission Road Cuttack + 8 more)','Ashok','G2','C','2026-11-25',{src:'CM2 sheet check'}),
+ T('Monthly MIS call: November numbers (5 PM)','Narendra','G1','L','2026-12-04',{src:'Calendar',presence:true}),
+];
+Object.assign(tasks.find(t=>t.t.startsWith('Kabir D&G list 2')),{st:'done',doneAt:'2026-11-22T15:45:00',presence:true});
+Object.assign(tasks.find(t=>t.t.startsWith('Swiggy clicks')),{st:'done',doneAt:'2026-11-11T12:00:00',presence:true});
+['Department PnL making','AOP revise FY27 revenue','Brand-level baseline for Growmaxx','Price cohorts (39 stores)'].forEach(n=>{const t=tasks.find(x=>x.t.startsWith(n));if(t)t.needAtt=true});
+let inbox=[
+ {id:1,t:'Revenue Meet (Gyanendra) – Tue 11:00',o:'Narendra',c:'L',due:'2026-11-17',src:'Calendar',presence:true,why:'New invite created today'},
+ {id:2,t:'Reply Swiggy (Abhishek Paul) on Gyanendra\'s 16 Nov thread',o:'Gyanendra',c:'P',due:'2026-11-18',src:'Gmail',why:'Platform thread, you are cc'},
+ {id:3,t:'TPA SOP for restaurant closure – follow up Niraj',o:'Gyanendra',c:'C',due:'2026-11-15',src:'Team (Gyanendra)',why:'Added by Gyanendra, due date passed'},
+ {id:4,t:'Momo Shomo onboarding on Toing',o:'Ashok',c:'R',due:'2026-11-20',src:'Team (Ashok)',why:'Added by Ashok'},
+ {id:5,t:'Critical Stores review prep (HSR, Sec 49, Alpha 1, Sarjapur)',o:'Narendra',c:'C',due:'2026-11-19',src:'Calendar',why:'Thu 10:30 Critical Stores meeting'},
+];
+const MT=[
+ {g:'G1',t:'Nov online GMV vs revised AOP',o:'Narendra',tg:'100% of AOP',ac:'91% run-rate',p:91},
+ {g:'G1',t:'Sarjapur + critical stores: discount % down, AOV up',o:'Ashok',tg:'AOV +₹20',ac:'+₹6',p:30},
+ {g:'G2',t:'Dec TPA ads aligned by 28 Nov (COCO>FOFO>New)',o:'Gyanendra',tg:'Done by 28 Nov',ac:'Not started',p:0},
+ {g:'G2',t:'Swiggy clicks reconciled vs deductions',o:'Gyanendra',tg:'Done',ac:'Done',p:100},
+ {g:'G3',t:'Growmaxx brand baseline + SGM halt analysis',o:'Gyanendra',tg:'2 reports',ac:'0 of 2',p:0},
+ {g:'G4',t:'Momo Shomo sale ₹1L / month',o:'Ashok',tg:'₹1,00,000',ac:'₹40,000',p:40},
+ {g:'G4',t:'Protein tagging live on Z + S',o:'Ashok',tg:'All stores',ac:'In progress',p:50},
+ {g:'G4',t:'Zomato party combos + Gold extra 10% live',o:'Ashok',tg:'Live',ac:'Live 3 Nov',p:100},
+ {g:'G5',t:'Mohit dashboard + Swiggy dashboard live',o:'Narendra',tg:'2 dashboards',ac:'0 of 2',p:20},
+ {g:'G6',t:'Revenue Associate hired',o:'Narendra',tg:'Offer by 30 Nov',ac:'Interviews on',p:50},
+ {g:'G6',t:'Franchise webinar delivered',o:'Narendra',tg:'Done',ac:'PPT in progress',p:60}];
+let laundry=[
+ {id:1,t:'Momo combo on Toing at ₹149',by:'Narendra',at:'2026-11-18'},{id:2,t:'Swiggy discount slab revision for bottom 20% stores',by:'Narendra',at:'2026-11-18'},
+ {id:3,t:'Growmaxx M+1 retention report',by:'Gyanendra',at:'2026-11-19'},{id:4,t:'Franchise mailer template for ads deductions',by:'Ashok',at:'2026-11-19'},
+ {id:5,t:'Explore ONDC onboarding for 10 COCO stores',by:'Narendra',at:'2026-11-20'}];
+const KW=[[/momo|combo|protein|menu|launch|swish|nikku|add-on|8 pack|16 pack/i,'G4'],[/growmaxx|sgm|m\+1|gm2/i,'G3'],[/ads?\b|discount|slab|roi|deduction|cpc|budget/i,'G2'],[/dashboard|automation|report card|coach/i,'G5'],[/hiring|hire|interview|handover|webinar|team/i,'G6'],[/aop|gmv|sales|aov|revenue|store|ondc|blinkit|flipkart|rapido/i,'G1']];
+const OWN=[[/report|analysis|data|reconcil|baseline|cohort|dashboard|market share|pnl/i,'Gyanendra'],[/onboard|listing|mailer|franchise|tagging|hygiene|ticket|price update|live/i,'Ashok']];
+function suggest(x){const g=(KW.find(k=>k[0].test(x.t))||[,'G1'])[1];const day=TODAY.getDate(),pace=Math.round(day/30*100);
+ const ms=MT.filter(m=>m.g===g);const gap=ms.length?Math.round(ms.reduce((z,m)=>z+(m.p>=100?-50:pace-m.p),0)/ms.length):0;
+ const o=(OWN.find(k=>k[0].test(x.t))||[,'Narendra'])[1];const c=/leadership|aop|pnl|ceo|review/i.test(x.t)?'L':/swiggy|zomato|toing|ownly|ondc|platform/i.test(x.t)?'P':/crisis|stock|downtime|critical/i.test(x.t)?'C':'R';
+ const sc=Math.max(0,gap)+CAT[c][1]+(30-day)/2;const due=new Date(TODAY);due.setDate(due.getDate()+(sc>70?2:sc>50?5:10));
+ return {g,o,c,gap,sc:Math.round(sc),due:due.toISOString().slice(0,10),hot:gap>10}}
+const MR=[['Finance report share',3,1],['Summary TPA update',3,0],['Finance budget sheet',3,1],['Aligned Z/S budget + outlet ad spend',4,1],['Z GM/SGM PnL',5,0],['Brand monthly sales summary',5,1],['Outlet funnel data',7,1],['TPA market share',12,0],['Discount form reminders',21,0],['Revenue target making + rollout',26,0],['TPA ads working + align',28,0],['TPA calendar share',30,0],['Franchise ads communication',30,0]];
+const BS=[['daily new store sale tracking','Central Planning','Narendra','2026-11-04'],['HSR','Critical Stores','Narendra','2026-11-05'],['Sector 49','Critical Stores','Narendra','2026-11-05'],['Alpha 1','Critical Stores','Narendra','2026-11-05'],['Sarjapur','Critical Stores','Narendra','2026-11-05'],
+['Close Swish commercials','Central Planning','Narendra','2026-11-07'],['Growmaxx equivalent on Swiggy','Data Analysis','Gyanendra','2026-11-07'],['Offer list for new store ramp-up','Offers/Campaigns','Ashok','2026-11-07'],['Indexing against all touchpoints and filters on both platforms','Offers/Campaigns','Narendra','2026-11-07'],
+['Sarjapur: reduce discount, increase AOV','Store tasks','Ashok','2026-11-07'],['Cheesy Nikku Singh drive','Central Planning','Narendra','2026-11-07'],['Add-ons pan India','Central Planning','Narendra','2026-11-07'],['New menu analysis and changes','Central Planning','Narendra','2026-11-07'],
+['Re: Incremental Sales from TPA deals','—','Narendra','2026-11-10'],['How to target competition and other cuisine stores','Zomato','Narendra','2026-11-10'],['Momo Shomo revival','Central Planning','Ashok','2026-11-10'],['Price cohorts (39 stores)','Central Planning','Gyanendra','2026-11-12'],
+['Discount sensitivity analysis','Data Analysis','Gyanendra','2026-11-12'],['Monthly budget aligned, utilised and ROI tracking','Data Analysis','Gyanendra','2026-11-12'],['Trend of Swiggy, Zomato PnL','Data Analysis','Gyanendra','2026-11-12'],
+['Stock-out & downtime reasoning from field coaches','Store tasks','Ashok','2026-11-13'],['Increasing 8 pack and 16 pack sales','Central Planning','Narendra','2026-11-13'],['Protein tagging increase and eat right increase','Central Planning','Ashok','2026-11-16'],
+['Analyze and solve Revenue tickets','Revenue','Ashok','2026-11-16'],['Experiment with properties on COCO','Store tasks','Narendra','2026-11-17'],['Revenue coach with funnel and all other data','Data Analysis','Narendra','2026-11-17'],
+['Hygiene check automation','Central Planning','Ashok','2026-11-20'],['How can we increase M+1 of Growmaxx users','Zomato','Gyanendra','2026-11-20'],['AOV increase strategy','Central Planning','Narendra','2026-11-20'],
+['Reduce food cost','Swiggy','Narendra','2026-11-30'],['Increase Momo sale to lakhs by end of November','Central Planning','Ashok','2026-11-30'],['Weekly/monthly mailers to franchises','Revenue','Ashok','2026-11-30'],['Magicpin removal of listings','Central Planning','Ashok','2026-11-01']]
+ .map((r,k)=>({bid:'BS-'+(1001+k),t:r[0],list:r[1],o:r[2],due:r[3],bsSt:'Open',sync:'—'}));
+let lastSync='15 Nov 2026, 1:40 PM (snapshot, read-only)';
+const ROUT=[
+ ['Finance report share','Gyanendra','Monthly 1–3'],['Summary TPA update + COCO summary','Gyanendra','Monthly 3rd'],
+ ['Finance budget sheet','Gyanendra','Monthly 3rd'],['Z GM/SGM PnL','Gyanendra','Monthly 3–5'],
+ ['Aligned Z/S budget + outlet ad spend','Gyanendra','Monthly 4th'],['Brand monthly sales summary (Z/S/T/O, COCO/FOFO)','Narendra','Monthly 5th'],
+ ['Outlet-wise funnel data','Gyanendra','Monthly 7th'],['TPA market share + cuisine benchmark','Gyanendra','Monthly 7–12'],
+ ['Discount form reminders','Ashok','Monthly 21st & 26th'],['Revenue target making + rollout','Narendra','Monthly 22–26'],
+ ['TPA ads working + align','Gyanendra','Monthly 22–28'],['TPA calendar share','Narendra','Monthly 30th'],
+ ['Franchise ads communication','Ashok','Monthly 30/31'],
+ ['Daily Task Update Sprint – TPA','All','Daily 10:10'],['New Store weekly meeting','Ashok','Mon 1 PM'],
+ ['Top 20% outlet review','Gyanendra','Mon 4 PM'],['Bottom 20% store meet','Gyanendra','Tue 4 PM'],
+ ['Stock-out & downtime','Ashok','Wed 1 PM'],['Ticketing / onboarding meet','Ashok','Wed 4 PM'],
+ ['Hygiene + competition benchmarking','Ashok','Mon & Thu 5 PM'],['Critical Stores (Revenue + FSM)','Narendra','Thu 10:30'],
+ ['Weekly review (replaces Zoho review)','Narendra','Fri 11 AM'],['Online Sales Huddle','Narendra','Mon & Fri 6 PM']];
+let impacts=[
+ {t:'Swiggy price hike impact on funnel',p:'Swiggy',stores:'Pan India',s:'2025-08-25',e:'2025-08-31',sales:'-4.1%',margin:'+2.3pp',funnel:'C2O -1.8pp',v:'Retest',l:'Price hike cut C2O; protect hero SKUs next time.'},
+ {t:'Swiggy NTP campaign',p:'Swiggy',stores:'NCR',s:'2026-02-01',e:'2026-02-28',sales:'+6.5%',margin:'-0.8pp',funnel:'NTP orders +18%',v:'Scale',l:'NTP worked in NCR; extend to Bengaluru.'},
+ {t:'Dine-in Fries & Coke @1',p:'Dine-in',stores:'Selected',s:'2025-08-26',e:'2025-08-31',sales:'n/a',margin:'n/a',funnel:'n/a',v:'Stop',l:'Activity not completed; no read.'}];
+impacts.forEach(x=>tasks.push(T(x.t,'Narendra',null,'R',x.e,{src:'Learnings (history)',st:'done',doneAt:x.e+'T18:00:00',card:{h:'',p:x.p,stores:x.stores,s:x.s,e:x.e,sales:x.sales,margin:x.margin,funnel:x.funnel,v:x.v,l:x.l}})));
+const me=()=>document.getElementById('me').value;
+const days=t=>Math.round((t.due-TODAY)/864e5);
+const score=t=>t.boost*15+CAT[t.c][1]+(days(t)<0?25:days(t)===0?20:days(t)<=3?10:0)+(t.g?10:0);
+const fmt=dt=>dt.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+const dueTxt=t=>{const n=days(t);return n<0?`<span class="late">${-n}d late</span>`:n===0?'<b>Today</b>':n===1?'Tomorrow':fmt(t.due)};
+const open=()=>tasks.filter(t=>t.st!=='done');const vis=()=>open().filter(t=>!mineOnly||t.o===me());
+function row(t){return `<div class="task" draggable="true" ondragstart="event.dataTransfer.setData('id',${t.id})"><div class="chk" title="Mark done" onclick="done(${t.id})"></div><div class="t"><div class="ti" style="cursor:pointer" onclick="detail(${t.id})">${t.t}</div>
+<div class="meta"><span class="score">${score(t)}</span><span class="tag t${t.c}">${CAT[t.c][0]}</span>${t.g?`<span class="tag">${t.g}</span>`:''}<span>${t.o}</span><span>· ${dueTxt(t)}</span>${t.presence?'<span class="tag">Presence only</span>':''}${t.needAtt?'<span class="tag tL">📎 Attachment required</span>':''}${t.att.length?`<span class="tag">📎 ${t.att.length}</span>`:''}${t.card?'<span class="tag tR">Impact card</span>':''}${t.boost?`<span class="tag">pinned ${t.boost>0?'+':''}${t.boost}</span>`:''}<span class="src">· ${t.src}</span></div></div>
+<div style="display:flex;flex-direction:column;gap:2px"><button class="btn s" title="Move up" onclick="bump(${t.id},1)">▲</button><button class="btn s" title="Move down" onclick="bump(${t.id},-1)">▼</button></div></div>`}
+function list(arr,empty='Nothing here'){return arr.length?arr.sort((a,b)=>score(b)-score(a)).map(row).join(''):`<div class="empty">${empty}</div>`}
+const V={
+today(){const mine=open().filter(t=>t.o===me());const top=[...mine].sort((a,b)=>score(b)-score(a)).slice(0,3);
+ const late=mine.filter(t=>days(t)<0),wk=mine.filter(t=>days(t)>=0&&days(t)<=4);
+ const mon=TODAY.getDay()===1,fri=TODAY.getDay()===5;
+ return `<h2>Good morning, ${me()}</h2><p class="lead">${TODAY.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</p>
+ ${mon?`<div class="banner"><b>Monday: set the week.</b> ${late.length} overdue to clear or re-date, ${inbox.length} in Inbox to approve, ${wk.length} due this week. ${laundry.filter(x=>!x.parked&&suggest(x).hot).length} laundry ideas link to goals behind pace. Pick your 3 big rocks below. <button class="btn s" onclick="location.hash='laundry'">Laundry</button> <button class="btn s p" onclick="location.hash='week'">Open Week board</button></div>`:''}
+ ${fri?`<div class="banner"><b>Friday review.</b> Close out, add Impact Cards, plan Monday.</div>`:''}
+ <div class="grid g2"><div class="card"><h3>Top 3 today</h3>${list(top,'All clear')}</div>
+ <div class="card"><h3>Your numbers</h3><div class="kpi">${mine.length}</div><div class="kl">open tasks</div><br>
+ <div class="kpi late">${late.length}</div><div class="kl">overdue</div><br><div class="kpi">${impactRate()}%</div><div class="kl">closed tasks with an Impact Card (target 70%)</div></div></div>
+ <div class="grid g2" style="margin-top:14px"><div class="card"><h3>Overdue</h3>${list(late,'No overdue tasks')}</div>
+ <div class="card"><h3>Meetings today (Calendar)</h3><div class="task"><div class="t"><div class="ti">Online Sales Huddle – Existing stores</div><div class="meta">6:00 PM · Bhargav PV</div></div></div></div></div>
+ <div class="card" style="margin-top:14px"><h3>Rest of this week</h3>${list(wk.filter(t=>!top.includes(t)))}</div>
+ <div style="margin-top:14px"><button class="btn p" onclick="addTask()">+ New task</button></div>`},
+week(){const mon=new Date(TODAY);mon.setDate(mon.getDate()-((mon.getDay()+6)%7));const ds=[0,1,2,3,4].map(i=>{const x=new Date(mon);x.setDate(x.getDate()+i);return x});
+ const key=x=>x.toDateString();const a=vis();const fri=ds[4];
+ const col=(title,arr,drop)=>`<div class="card dz" ondragover="event.preventDefault();this.style.outline='2px dashed var(--acc)'" ondragleave="this.style.outline=''" ondrop="this.style.outline='';moveTo(+event.dataTransfer.getData('id'),'${drop}')"><h3>${title} · ${arr.length}</h3>${list(arr,'Drop tasks here')}</div>`;
+ return `<h2>Week board · ${fmt(ds[0])}–${fmt(fri)}</h2><p class="lead">Drag a task to another day to re-date it. ▲▼ to re-rank within the day. ${mineOnly?'Showing only '+me()+'\'s tasks.':'Showing everyone.'}</p>
+ <div style="display:grid;grid-template-columns:repeat(7,minmax(200px,1fr));gap:10px;overflow-x:auto">
+ ${col('Overdue',a.filter(t=>t.due<ds[0]),'')}
+ ${ds.map(x=>col(x.toLocaleDateString('en-IN',{weekday:'short',day:'numeric'})+(key(x)===key(TODAY)?' (today)':''),a.filter(t=>key(t.due)===key(x)),x.toISOString().slice(0,10))).join('')}
+ ${col('Later',a.filter(t=>t.due>new Date(fri.getTime()+864e5)),'later')}</div>`},
+goals(){return `<h2>Goals · Q3 FY27 (Oct–Dec)</h2><p class="lead">Every task links up to a goal. Progress = tasks done + KPI vs target.</p>
+ <div class="grid g3">${GOALS.map(g=>{const all=tasks.filter(t=>t.g===g.id),dn=all.filter(t=>t.st==='done').length;const pct=Math.round(g.actual/g.target*100);
+ return `<div class="card"><h3>${g.id}</h3><div style="font-weight:600;margin-bottom:8px">${g.t}</div><div class="kl">${g.kpi}: ${g.actual} ${g.unit}</div>
+ <div class="bar"><i style="width:${Math.min(pct,100)}%"></i></div><div class="kl">Tasks ${dn}/${all.length} done · ${all.filter(t=>t.st!=='done'&&days(t)<0).length} overdue</div></div>`}).join('')}</div>
+ <div class="card" style="margin-top:14px"><h3>Not linked to any goal</h3>${list(vis().filter(t=>!t.g),'All tasks are goal-linked')}</div>`},
+inbox(){if(me()!=='Narendra')return `<h2>Inbox</h2><p class="lead">Only Narendra approves. Tasks you add go here.</p><div class="card">${inbox.filter(i=>i.src.includes(me())).map(i=>`<div class="task"><div class="t"><div class="ti">${i.t}</div><div class="meta">Waiting for approval</div></div></div>`).join('')||'<div class="empty">Nothing pending</div>'}</div><br><button class="btn p" onclick="addTask()">+ Suggest a task</button>`;
+ return `<h2>Inbox · ${inbox.length} to approve</h2><p class="lead">Nothing reaches anyone's list without your click. Sources: Gmail, Calendar, meetings, team.</p>
+ <div class="card"><table><tr><th>Suggested task</th><th>Owner</th><th>Priority</th><th>Due</th><th>Source</th><th></th></tr>
+ ${inbox.map(i=>`<tr><td><b>${i.t}</b><div class="src">${i.why}</div></td><td>${i.o}</td><td><span class="tag t${i.c}">${CAT[i.c][0]}</span></td><td>${fmt(d(i.due))}</td><td>${i.src}</td>
+ <td style="white-space:nowrap"><button class="btn s p" onclick="approve(${i.id})">Approve</button> <button class="btn s" onclick="reject(${i.id})">Reject</button></td></tr>`).join('')||'<tr><td colspan=6 class="empty">Inbox zero</td></tr>'}</table></div>`},
+month(){const day=TODAY.getDate();return `<h2>Monthly targets · November 2026</h2><p class="lead">Quarter goal → this month's target → weekly tasks. Day ${day} of 30 · expected pace ${Math.round(day/30*100)}%.</p>
+ <div class="card"><table><tr><th>Goal</th><th>November target</th><th>Owner</th><th>Target</th><th>Actual</th><th style="width:22%">Progress</th><th>Open tasks</th></tr>
+ ${MT.map(m=>{const pace=Math.round(day/30*100),c=m.p>=100?'var(--ok)':m.p<pace-15?'var(--L)':'var(--C)';const ot=open().filter(t=>t.g===m.g&&t.o===m.o).length;
+ return `<tr><td><span class="tag">${m.g}</span></td><td><b>${m.t}</b></td><td>${m.o}</td><td>${m.tg}</td><td>${m.ac}<div><input type="number" min=0 max=100 value="${m.p}" style="width:70px;padding:3px" title="Update % achieved" onchange="setAct(${MT.indexOf(m)},this.value)"> %</div></td><td><div class="bar"><i style="width:${m.p}%;background:${c}"></i></div><span class="kl">${m.p}% ${m.p<pace-15&&m.p<100?'· behind pace':''}</span></td><td>${ot}</td></tr>`}).join('')}</table></div>
+ <div class="grid g2" style="margin-top:14px"><div class="card"><h3>Month-close routines</h3><table>${MR.map(r=>`<tr><td>${r[0]}</td><td>by ${r[1]} Nov</td><td>${(rDone['m'+r[0]+TODAY.getMonth()]??r[2])?'<span style="color:var(--ok)">✓ Done</span>':r[1]<day?'<span class="late">Missed</span>':'Upcoming'}</td></tr>`).join('')}</table></div>
+ <div class="card"><h3>Month summary</h3><div class="kpi">${MT.filter(m=>m.p>=100).length}/${MT.length}</div><div class="kl">targets hit</div><br><div class="kpi late">${MT.filter(m=>m.p<Math.round(day/30*100)-15&&m.p<100).length}</div><div class="kl">behind pace</div><br><div class="kl">Dec targets get drafted on 22–26 Nov (revenue target routine) and come to your Inbox for approval.</div></div></div>`},
+bs(){const a=BS.filter(x=>!mineOnly||x.o===me());const link=x=>tasks.find(t=>t.t.toLowerCase()===x.t.toLowerCase());
+ const lists=[...new Set(a.map(x=>x.list))];
+ return `<h2>BS Tasks · from Bhargav's dashboard</h2><p class="lead">Only tasks allocated to Narendra, Ashok or Gyanendra (Online Revenue). Last sync: ${lastSync}. <b>Two-way sync goes live once Bhargav gives API access</b>; until then "Done" here is queued.</p>
+ <div class="grid g3" style="margin-bottom:14px">${PEOPLE.map(p=>{const m=BS.filter(x=>x.o===p),o=m.filter(x=>x.bsSt!=='Done');return `<div class="card"><h3>${p}</h3><div class="kpi">${o.length}</div><div class="kl">open on BS Tasks · <span class="late">${o.filter(x=>new Date(x.due+'T18:00')<TODAY).length} late</span></div></div>`}).join('')}</div>
+ ${lists.map(l=>`<div class="card" style="margin-bottom:12px"><h3>${l}</h3><table><tr><th style="width:90px">BS ID</th><th>Task</th><th>Owner</th><th>BS due</th><th>In our tool</th><th>BS status</th><th></th></tr>
+ ${a.filter(x=>x.list===l).map(x=>{const t=link(x),late=new Date(x.due+'T18:00')<TODAY&&x.bsSt!=='Done';return `<tr><td class="src">${x.bid}</td><td><b>${x.t}</b></td><td>${x.o}</td><td>${late?`<span class="late">${fmt(d(x.due))}</span>`:fmt(d(x.due))}</td>
+ <td>${t?(t.st==='done'?'<span style="color:var(--ok)">Closed</span>':'Linked'+(t.g?' · '+t.g:'')):'<span class="src">Not imported</span>'}</td><td>${x.bsSt}${x.sync!=='—'?`<div class="src">${x.sync}</div>`:''}</td>
+ <td style="white-space:nowrap">${x.bsSt==='Done'?'':t?`<button class="btn s" onclick="detail(${t.id})">Open</button>`:`<button class="btn s" onclick="bsImport('${x.bid}')">Import</button>`} ${x.bsSt==='Done'?'':`<button class="btn s p" onclick="bsDone('${x.bid}')">Mark done</button>`}</td></tr>`}).join('')}</table></div>`).join('')}`},
+done(){const mon=new Date(TODAY);mon.setDate(mon.getDate()-((mon.getDay()+6)%7));mon.setHours(0,0,0,0);
+ const m1=new Date(TODAY.getFullYear(),TODAY.getMonth(),1),pm1=new Date(TODAY.getFullYear(),TODAY.getMonth()-1,1),lw=new Date(mon);lw.setDate(lw.getDate()-7);
+ const R={week:[mon,null],lastweek:[lw,mon],month:[m1,null],lastmonth:[pm1,m1],all:[null,null]}[dF.per];
+ const who=mineOnly?me():dF.who;
+ const a=tasks.filter(t=>t.st==='done'&&(who==='All'||t.o===who)).filter(t=>{const x=new Date(t.doneAt||0);return(!R[0]||x>=R[0])&&(!R[1]||x<R[1])}).filter(t=>!dF.q||JSON.stringify([t.t,t.o,t.card||{}]).toLowerCase().includes(dF.q)).sort((x,y)=>(y.doneAt||'').localeCompare(x.doneAt||''));
+ const wk=a;const opt=(v,l,cur)=>`<option value="${v}" ${v===cur?'selected':''}>${l}</option>`;
+ const ontime=a.filter(t=>!t.dropped&&new Date(t.doneAt)<=new Date(t.due.getTime()+864e5)).length;
+ return `<h2>Completed</h2><p class="lead">Everything closed or dropped, newest first. Click ▸ on a task to see the impact it created.</p>
+ <div style="display:flex;gap:10px;margin-bottom:14px;max-width:820px"><select onchange="dF.per=this.value;render()">${opt('week','This week',dF.per)}${opt('lastweek','Last week',dF.per)}${opt('month','This month',dF.per)}${opt('lastmonth','Last month',dF.per)}${opt('all','All time',dF.per)}</select><input placeholder="Search task, store, platform, learning…" value="${dF.q}" onchange="dF.q=this.value.toLowerCase();render()" style="min-width:260px">
+ <select ${mineOnly?'disabled':''} onchange="dF.who=this.value;render()">${opt('All','All people',who)}${PEOPLE.map(p=>opt(p,p,who)).join('')}</select></div>
+ <div class="grid g3" style="margin-bottom:14px"><div class="card"><div class="kpi">${wk.length}</div><div class="kl">closed · ${{week:"this week",lastweek:"last week",month:"this month",lastmonth:"last month",all:"all time"}[dF.per]}${who!=="All"?" · "+who:""}</div></div>
+ <div class="card"><div class="kpi">${a.length?Math.round(ontime/a.filter(t=>!t.dropped).length*100||0):0}%</div><div class="kl">closed on time</div></div>
+ <div class="card"><div class="kpi">${(()=>{const c=a.filter(t=>!t.presence&&!t.dropped);return c.length?Math.round(c.filter(t=>t.card).length/c.length*100):0})()}%</div><div class="kl">with Impact Card (target 70%)</div></div></div>
+ <div class="card"><table><tr><th></th><th>Closed on</th><th>Task</th><th>Owner</th><th>Goal</th><th>Due was</th><th>Close type</th><th>📎</th><th></th></tr>
+ ${a.map(t=>`<tr><td>${t.card?`<a href="#" style="text-decoration:none" onclick="event.preventDefault();dF.open[${t.id}]=!dF.open[${t.id}];render()">${dF.open[t.id]?'▾':'▸'}</a>`:''}</td><td>${t.doneAt?fmt(new Date(t.doneAt)):'-'}</td><td><b>${t.t}</b><div class="src">${t.src}</div></td><td>${t.o}</td><td>${t.g||'-'}</td><td>${fmt(t.due)}</td>
+ <td>${t.dropped?'<span class="late">Dropped</span>':t.card?`<span class="v-${t.card.v}">Impact: ${t.card.v||'-'}</span>`:'Presence only'}</td><td>${t.att.length||''}</td>
+ <td style="white-space:nowrap"><button class="btn s" onclick="detail(${t.id})">Open</button> <button class="btn s" onclick="reopen(${t.id})">Reopen</button></td></tr>${t.card&&dF.open[t.id]?`<tr><td></td><td colspan=8 style="background:#fafaf8"><div class="row3" style="gap:14px">
+ <div><div class="kl">What changed</div>${t.card.h||'-'}</div><div><div class="kl">Platform · Stores</div>${t.card.p||'-'} · ${t.card.stores||'-'}</div><div><div class="kl">Period</div>${t.card.s||'-'} → ${t.card.e||'-'}</div>
+ <div><div class="kl">Sales Δ</div><b>${t.card.sales||'-'}</b></div><div><div class="kl">Margin Δ</div><b>${t.card.margin||'-'}</b></div><div><div class="kl">Funnel Δ</div><b>${t.card.funnel||'-'}</b></div></div>
+ <div style="margin-top:8px"><span class="kl">Verdict</span> <span class="v-${t.card.v}">${t.card.v||'-'}</span> · <span class="kl">Learning</span> ${t.card.l||'-'}</div>
+ ${t.att.length?`<div style="margin-top:6px">${t.att.map(x=>`📎 <a href="${x.u}" target="_blank" rel="noopener">${x.n}</a>`).join(' · ')}</div>`:''}</td></tr>`:''}`).join('')||'<tr><td colspan=9 class="empty">Nothing closed yet</td></tr>'}</table></div>`},
+laundry(){const L=laundry.filter(x=>!x.parked&&(!mineOnly||x.by===me())).map(x=>({...x,s:suggest(x)})).sort((a,b)=>b.s.sc-a.s.sc),P=laundry.filter(x=>x.parked);
+ return `<h2>Laundry list</h2><p class="lead">Dump anything here: one line per idea. The tool links each to a goal and ranks it by how far behind that goal's KPI is. Promote to make it a real task.</p>
+ <div class="card" style="margin-bottom:14px"><textarea id="ld" rows="3" placeholder="Type or paste ideas, one per line…  (Ctrl+Enter to add)" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey))dump()"></textarea><div class="right" style="margin-top:8px"><button class="btn p" onclick="dump()">Add to laundry</button></div></div>
+ <div class="card"><h3>Suggested order · ${L.length} items</h3><table><tr><th>Idea</th><th>Suggested goal</th><th>KPI status</th><th>Owner</th><th>Priority</th><th>Score</th><th></th></tr>
+ ${L.map(x=>`<tr><td>${x.s.hot?'🔥 ':''}<b>${x.t}</b><div class="src">by ${x.by} · ${fmt(new Date(x.at))}</div></td><td><span class="tag">${x.s.g}</span> ${(GOALS.find(g=>g.id===x.s.g)||{}).t||''}</td>
+ <td>${x.s.gap>10?`<span class="late">Behind pace −${x.s.gap}%</span>`:x.s.gap<-20?'<span style="color:var(--ok)">Target hit</span>':'On track'}</td><td>${x.s.o}</td><td><span class="tag t${x.s.c}">${CAT[x.s.c][0]}</span></td><td><span class="score">${x.s.sc}</span></td>
+ <td style="white-space:nowrap">${me()==='Narendra'?`<button class="btn s p" onclick="promote(${x.id})">Promote</button>`:''} <button class="btn s" onclick="park(${x.id},1)">Park</button> <button class="btn s" onclick="ldel(${x.id})">✕</button></td></tr>`).join('')||'<tr><td colspan=7 class="empty">Empty. Dump ideas above.</td></tr>'}</table></div>
+ ${P.length?`<div class="card" style="margin-top:14px"><h3>Parked · ${P.length}</h3>${P.map(x=>`<div class="task"><div class="t">${x.t}</div><button class="btn s" onclick="park(${x.id},0)">Unpark</button></div>`).join('')}</div>`:''}`},
+routines(){const mon=new Date(TODAY);mon.setDate(mon.getDate()-((mon.getDay()+6)%7));
+ const W=[['Daily Task Update Sprint – TPA','All',[0,1,2,3,4],'10:10'],['Critical Stores (Revenue + FSM)','Narendra',[3],'10:30'],['Weekly review','Narendra',[4],'11:00'],['New Store weekly meeting','Ashok',[0],'13:00'],['Stock-out & downtime','Ashok',[2],'13:00'],['Top 20% outlet review','Gyanendra',[0],'16:00'],['Bottom 20% store meet','Gyanendra',[1],'16:00'],['Ticketing / onboarding meet','Ashok',[2],'16:00'],['Hygiene + competition benchmarking','Ashok',[0,3],'17:00'],['Online Sales Huddle','Narendra',[0,4],'18:00']];
+ const wi=[];W.forEach(r=>r[2].forEach(dd=>{const x=new Date(mon);x.setDate(x.getDate()+dd);const[h,m]=r[3].split(':');x.setHours(+h,+m);wi.push({k:'w'+r[0]+x.toDateString(),n:r[0],o:r[1],dt:x})}));wi.sort((a,b)=>a.dt-b.dt);
+ const mi=MR.map(r=>({k:'m'+r[0]+TODAY.getMonth(),n:r[0],o:(ROUT.find(z=>z[0].startsWith(r[0].split(' ')[0]))||[,'—'])[1],day:r[1],pre:r[2]})).sort((a,b)=>a.day-b.day);
+ mi.forEach(x=>{if(x.pre&&rDone[x.k]===undefined)rDone[x.k]=1});
+ const vw=wi.filter(x=>!mineOnly||x.o===me()||x.o==='All'),vm=mi.filter(x=>!mineOnly||x.o===me());
+ const st=(k,late)=>rDone[k]?'<span style="color:var(--ok)">Done</span>':late?'<span class="late">Missed</span>':'Upcoming';
+ const ck=k=>`<input type="checkbox" style="width:auto" ${rDone[k]?'checked':''} onchange="rDone['${k.replace(/'/g,"")}']=this.checked?1:0;render()">`;
+ return `<h2>Routines</h2><p class="lead">In date order. Tick each one off as it's done; missed ones show in red and reach the Friday review.</p>
+ <div class="grid g2"><div class="card"><h3>This week (by date & time)</h3><table><tr><th></th><th>When</th><th>Routine</th><th>Owner</th><th>Status</th></tr>
+ ${vw.map(x=>`<tr><td>${ck(x.k)}</td><td>${x.dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric'})} ${x.dt.toTimeString().slice(0,5)}</td><td>${x.n}</td><td>${x.o}</td><td>${st(x.k,x.dt<new Date())}</td></tr>`).join('')}</table></div>
+ <div class="card"><h3>This month (by due day)</h3><table><tr><th></th><th>Due</th><th>Routine</th><th>Owner</th><th>Status</th></tr>
+ ${vm.map(x=>`<tr><td>${ck(x.k)}</td><td>${x.day} ${TODAY.toLocaleDateString('en-IN',{month:'short'})}</td><td>${x.n}</td><td>${x.o}</td><td>${st(x.k,x.day<TODAY.getDate())}</td></tr>`).join('')}</table></div></div>`},
+impact(){return `<h2>Impact Log</h2><p class="lead">Every experiment or change, with dates, stores and impact. Answers "what happened when we did X?"</p>
+ <input placeholder="Search: platform, store, lever…" oninput="filt(this.value)" style="max-width:360px;margin-bottom:12px">
+ <div class="card"><table id="it"><tr><th>Task</th><th>Platform</th><th>Stores</th><th>Dates</th><th>Sales</th><th>Margin</th><th>Funnel</th><th>Verdict</th><th>Learning</th><th>📎</th></tr>
+ ${impacts.map(x=>`<tr><td><b>${x.t}</b></td><td>${x.p}</td><td>${x.stores}</td><td>${x.s} → ${x.e}</td><td>${x.sales}</td><td>${x.margin}</td><td>${x.funnel}</td><td class="v-${x.v}">${x.v}</td><td>${x.l}</td><td>${x.att||''}</td></tr>`).join('')}</table></div>`},
+team(){return `<h2>Team</h2><p class="lead">Load, slippage and close quality per person.</p><div class="grid g3">${PEOPLE.map(p=>{const a=tasks.filter(t=>t.o===p),o=a.filter(t=>t.st!=='done');
+ return `<div class="card"><h3>${p}</h3><div class="kpi">${o.length}</div><div class="kl">open / ${WIP} limit</div><div class="bar"><i style="width:${Math.min(o.length/WIP*100,100)}%;background:${o.length>=WIP?'var(--L)':'var(--acc)'}"></i></div><br><div class="kpi late">${o.filter(t=>days(t)<0).length}</div><div class="kl">overdue (owner reminded + escalated to you)</div><br>
+ <div class="kl">${p==='Ashok'?'Ops execution':p==='Gyanendra'?'Data & analytics · on notice → Revenue Associate':'Head of Online Revenue'}</div></div>`}).join('')}</div>
+ <div class="card" style="margin-top:14px"><h3>WIP limit</h3><div class="empty">Limit: <b>10 open tasks</b> per person. Adding or approving an 11th asks you to drop or re-date one first.</div></div>`}
+};
+function impactRate(){const c=tasks.filter(t=>t.st==='done'&&!t.presence);return c.length?Math.round(c.filter(t=>t.card).length/c.length*100):0}
+/* ===== CONFIG: fill these after creating Supabase project (see README) ===== */
+const CFG={supabaseUrl:'https://jgkinupyppqndkqicgnj.supabase.co',supabaseKey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impna2ludXB5cHBxbmRrcWljZ25qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMDkxNjksImV4cCI6MjExMDU4NTE2OX0.X1QJ7AGZeBmcACOfws1ylqj5gXV1Kcr8Av26qKYICIc',team:['narendrap.kumar@burgersinghonline.com','ashok.yadav@burgersinghonline.com','gyanendra.kumar@burgersinghonline.com'],
+ bsUrl:'',bsKey:'',bsOwners:{'Narendra':'Narendra P Kumar','Ashok':'Ashok Kumar Yadav','Gyanendra':'Gyanendra Kumar'}};
+let sb=null,saveT_=null,loading=false;
+function pack(){return {tasks:tasks.map(t=>({...t,due:t.due.toISOString()})),inbox,impacts,rDone,BS,id,laundry,MT:MT.map(m=>m.p)}}
+function unpack(o){tasks=o.tasks.map(t=>({...t,due:new Date(t.due)}));inbox=o.inbox;impacts=o.impacts;rDone=o.rDone||{};if(o.BS)BS.splice(0,BS.length,...o.BS);id=o.id||id;if(o.laundry)laundry=o.laundry;if(o.MT)o.MT.forEach((v,k)=>{if(MT[k])MT[k].p=v})}
+function persist(){if(!sb||loading)return;clearTimeout(saveT_);saveT_=setTimeout(async()=>{const{error}=await sb.from('tm_state').upsert({id:'online-revenue',data:pack(),updated_at:new Date().toISOString()});if(error)toast('Save failed: '+error.message)},600)}
+async function boot(){if(!CFG.supabaseUrl)return;await new Promise(r=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.onload=r;document.head.appendChild(s)});
+ sb=supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);let{data:{session}}=await sb.auth.getSession();
+ if(!session){document.querySelectorAll('nav a,.who').forEach(e=>e.style.display='none');window.onhashchange=null;document.getElementById('v').innerHTML=`<div class="card" style="max-width:420px"><h3>Sign in</h3><p class="src">Team emails only. You get a one-time login link.</p><input id="em" placeholder="you@burgersinghonline.com"><div class="right"><button class="btn p" onclick="login()">Send link</button></div></div>`;return}
+ sb._ok=1;const em=session.user.email;if(!CFG.team.includes(em)){document.getElementById('v').innerHTML='<div class="card">Not on the Online Revenue team list.</div>';return}
+ document.getElementById('me').value=em.startsWith('ashok')?'Ashok':em.startsWith('gyanendra')?'Gyanendra':'Narendra';if(!em.startsWith('narendrap'))document.getElementById('me').disabled=true;
+ loading=true;const{data}=await sb.from('tm_state').select('data').eq('id','online-revenue').maybeSingle();if(data)unpack(data.data);loading=false;
+ sb.channel('tm').on('postgres_changes',{event:'UPDATE',schema:'public',table:'tm_state'},p=>{loading=true;unpack(p.new.data);loading=false;render()}).subscribe();
+ await bsPull();render();setInterval(bsPull,10*60*1000)}
+async function login(){const e=document.getElementById('em').value.trim().toLowerCase();if(!CFG.team.includes(e))return toast('Not on team list');await sb.auth.signInWithOtp({email:e,options:{emailRedirectTo:location.href.split('#')[0]}});toast('Login link sent to '+e)}
+/* BS Tasks sync: needs Bhargav's URL + key. Column names to confirm with Bhargav (v_tasks). */
+async function bsPull(){if(!CFG.bsUrl)return;try{const r=await fetch(CFG.bsUrl+'/rest/v1/v_tasks?select=*&status=neq.done',{headers:{apikey:CFG.bsKey,Authorization:'Bearer '+CFG.bsKey}});const rows=await r.json();
+ const who=Object.entries(CFG.bsOwners);const mine=rows.filter(x=>who.some(([,n])=>(x.owner_name||'')===n));
+ BS.splice(0,BS.length,...mine.map(x=>({bid:x.id,t:x.title,list:x.list_name||'—',o:who.find(([,n])=>n===x.owner_name)[0],due:(x.due_date||'').slice(0,10),bsSt:x.status==='done'?'Done':'Open',sync:'—'})));
+ lastSync=new Date().toLocaleString('en-IN');persist()}catch(e){console.log('BS pull failed',e)}}
+async function bsPush(b){if(!CFG.bsUrl)return false;const r=await fetch(CFG.bsUrl+'/rest/v1/tasks?id=eq.'+b,{method:'PATCH',headers:{apikey:CFG.bsKey,Authorization:'Bearer '+CFG.bsKey,'Content-Type':'application/json'},body:JSON.stringify({status:'done'})});return r.ok}
+function render(){if(sb&&!sb._ok)return;persist();const v=(location.hash||'#today').slice(1);document.getElementById('v').innerHTML=(V[v]||V.today)();
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));document.getElementById('ib').textContent=inbox.length||'';document.getElementById('lb').textContent=laundry.filter(x=>!x.parked).length||'';document.getElementById('bsb').textContent=BS.filter(x=>x.bsSt!=='Done').length}
+function toast(s){const e=document.getElementById('toast');e.textContent=s;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function modal(h){document.getElementById('mb').innerHTML=h;document.getElementById('m').classList.add('on')}
+function close_(){document.getElementById('m').classList.remove('on')}
+document.getElementById('m').onclick=e=>{if(e.target.id==='m')close_()};
+function done(i){const t=tasks.find(x=>x.id===i);
+ if(t.needAtt&&!t.att.length){toast('Attachment required before closing');return detail(i)}
+ if(t.presence||t.card){t.st='done',t.doneAt=new Date().toISOString();toast('Closed'+(t.src==='BS Tasks'?' · will mark Done in BS Tasks':''));return render()}
+ detail(i,true)}
+function detail(i,closing){const t=tasks.find(x=>x.id===i),c=t.card||{};
+ modal(`<h3>${closing?'Close: ':''}${t.t}</h3>
+ <div class="row3"><div><label>Owner</label><select id="do">${PEOPLE.map(p=>`<option ${p===t.o?'selected':''}>${p}</option>`)}</select></div><div><label>Due</label><input id="dd" type="date" value="${t.due.toISOString().slice(0,10)}"></div>
+ <div><label>Priority</label><select id="dc">${Object.keys(CAT).map(k=>`<option value="${k}" ${k===t.c?'selected':''}>${CAT[k][0]}</option>`)}</select></div></div>
+ <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dp" style="width:auto" ${t.presence?'checked':''}> Presence only (no Impact Card)</label>
+ <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="dn" style="width:auto" ${t.needAtt?'checked':''}> 📎 Attachment required to close</label>
+ <h3 style="margin-top:16px;font-size:14px">Attachments (${t.att.length})</h3>
+ ${t.att.map((a,k)=>`<div class="meta" style="font-size:13px">📎 <a href="${a.u}" target="_blank" rel="noopener">${a.n}</a> <a href="#" onclick="event.preventDefault();rmAtt(${i},${k})">remove</a></div>`).join('')||'<div class="empty">None yet</div>'}
+ <div class="row"><input id="al" placeholder="Paste Drive / Sheet link"><div style="display:flex;gap:6px"><button class="btn s" onclick="addLink(${i})">Add link</button><label class="btn s" style="margin:0;color:var(--ink)">Upload file<input type="file" style="display:none" onchange="addFile(${i},this)"></label></div></div>
+ <h3 style="margin-top:16px;font-size:14px">Impact Card ${t.presence?'(not needed)':''}</h3>
+ <div class="src">Fill it any time: when you start (hypothesis, stores, start date) and when you close (results, verdict).</div>
+ <label>Hypothesis / what we changed</label><input id="ih" value="${c.h||''}">
+ <div class="row"><div><label>Platform</label><select id="ip">${['Zomato','Swiggy','Toing','Ownly','All'].map(x=>`<option ${x===c.p?'selected':''}>${x}</option>`)}</select></div><div><label>Stores</label><input id="is" value="${c.stores||''}" placeholder="e.g. NCR COCO / 39 stores"></div></div>
+ <div class="row"><div><label>Start</label><input id="isd" type="date" value="${c.s||''}"></div><div><label>End</label><input id="ied" type="date" value="${c.e||''}"></div></div>
+ <div class="row3"><div><label>Sales Δ</label><input id="isa" value="${c.sales||''}" placeholder="+5%"></div><div><label>Margin Δ</label><input id="ima" value="${c.margin||''}" placeholder="+1pp"></div><div><label>Funnel Δ</label><input id="ifu" value="${c.funnel||''}" placeholder="C2O +2pp"></div></div>
+ <div class="row"><div><label>Verdict</label><select id="iv"><option value="">—</option>${['Scale','Retest','Stop'].map(x=>`<option ${x===c.v?'selected':''}>${x}</option>`)}</select></div><div><label>Learning (1–2 lines)</label><input id="il" value="${c.l||''}"></div></div>
+ <div class="right"><button class="btn" onclick="saveD(${i},false)">Save</button><button class="btn p" onclick="saveD(${i},true)">Save & close task</button></div>`)}
+function readD(i){const t=tasks.find(x=>x.id===i),g=k=>document.getElementById(k).value;
+ t.o=g('do');t.due=d(g('dd'));t.c=g('dc');t.presence=document.getElementById('dp').checked;t.needAtt=document.getElementById('dn').checked;
+ const c={h:g('ih'),p:g('ip'),stores:g('is'),s:g('isd'),e:g('ied'),sales:g('isa'),margin:g('ima'),funnel:g('ifu'),v:g('iv'),l:g('il')};
+ if(c.h||c.stores||c.v||c.l)t.card=c;return t}
+function saveD(i,closeIt){const t=readD(i);
+ if(closeIt){if(t.needAtt&&!t.att.length)return toast('Add an attachment first: this task needs one to close');
+  if(!t.presence&&!(t.card&&t.card.v&&t.card.l))return toast('Add Verdict + Learning, or tick Presence only');
+  t.st='done',t.doneAt=new Date().toISOString();const bx=BS.find(y=>y.t.toLowerCase()===t.t.toLowerCase());if(bx){bx.bsSt='Done';bx.sync='Queued → BS Tasks (awaiting API)'}if(t.card)impacts.unshift({t:t.t,p:t.card.p,stores:t.card.stores||'-',s:t.card.s||'-',e:t.card.e||'-',sales:t.card.sales||'-',margin:t.card.margin||'-',funnel:t.card.funnel||'-',v:t.card.v,l:t.card.l,att:t.att.length});
+  toast('Closed'+(t.card?' + impact saved':'')+(t.src==='BS Tasks'?' · will mark Done in BS Tasks':''))}else toast('Saved');
+ close_();render()}
+function addLink(i){const u=document.getElementById('al').value.trim();if(!u)return;readD(i);const t=tasks.find(x=>x.id===i);t.att.push({n:u.replace(/^https?:\/\//,'').slice(0,45),u});detail(i)}
+function addFile(i,inp){const f=inp.files[0];if(!f)return;readD(i);tasks.find(x=>x.id===i).att.push({n:f.name,u:URL.createObjectURL(f)});detail(i)}
+function rmAtt(i,k){readD(i);tasks.find(x=>x.id===i).att.splice(k,1);detail(i)}
+function bsImport(b){const x=BS.find(y=>y.bid===b);wipCheck(x.o,()=>{tasks.push(T(x.t,x.o,null,'R',x.due,{src:'BS Tasks',bid:b}));toast('Imported → '+x.o+'\'s list');render()})}
+function bsDone(b){const x=BS.find(y=>y.bid===b),t=tasks.find(z=>z.t.toLowerCase()===x.t.toLowerCase()&&z.st!=='done');
+ if(t){if(t.needAtt&&!t.att.length||(!t.presence&&!t.card)){toast('Close it here first (Impact Card / attachment)');return detail(t.id,true)}}
+ x.bsSt='Done';x.sync='Queued → BS Tasks (awaiting API)';bsPush(x.bid).then(ok=>{if(ok){x.sync='Synced to BS Tasks';render()}});if(t)t.st='done';toast('Marked done · queued for BS Tasks');render()}
+function dump(){const v=document.getElementById('ld').value.split('\n').map(x=>x.trim()).filter(Boolean);if(!v.length)return;v.forEach(t=>laundry.push({id:Date.now()+Math.random(),t,by:me(),at:new Date().toISOString().slice(0,10)}));toast(v.length+' added to laundry');render()}
+function park(i,v){laundry.find(x=>x.id===i).parked=v;render()}
+function ldel(i){laundry=laundry.filter(x=>x.id!==i);render()}
+function promote(i){const x=laundry.find(y=>y.id===i),s=suggest(x);
+ modal(`<h3>Promote to task</h3><label>Task</label><input id="pt" value="${x.t.replace(/"/g,'&quot;')}">
+ <div class="row"><div><label>Owner</label><select id="po">${PEOPLE.map(p=>`<option ${p===s.o?'selected':''}>${p}</option>`)}</select></div><div><label>Goal</label><select id="pg">${GOALS.map(g=>`<option ${g.id===s.g?'selected':''}>${g.id}</option>`)}</select></div></div>
+ <div class="row"><div><label>Priority</label><select id="pc">${Object.keys(CAT).map(k=>`<option value="${k}" ${k===s.c?'selected':''}>${CAT[k][0]}</option>`)}</select></div><div><label>Due</label><input id="pd" type="date" value="${s.due}"></div></div>
+ <div class="right"><button class="btn" onclick="close_()">Cancel</button><button class="btn p" onclick="doPromote(${i})">Promote</button></div>`)}
+function doPromote(i){const g=k=>document.getElementById(k).value;const v={t:g('pt'),o:g('po'),gl:g('pg'),c:g('pc'),du:g('pd')};close_();
+ wipCheck(v.o,()=>{tasks.push(T(v.t,v.o,v.gl,v.c,v.du,{src:'Laundry list'}));laundry=laundry.filter(y=>y.id!==i);toast('Promoted → '+v.o);render()})}
+function setAct(k,v){MT[k].p=Math.max(0,Math.min(100,+v||0));render()}
+function reopen(i){const t=tasks.find(x=>x.id===i);t.st='todo';delete t.doneAt;delete t.dropped;toast('Reopened');render()}
+function bump(i,v){const t=tasks.find(x=>x.id===i);t.boost+=v;render()}
+function moveTo(i,dt){const t=tasks.find(x=>x.id===i);if(!t)return;if(dt==='later'){const x=new Date(TODAY);x.setDate(x.getDate()+7);t.due=d(x.toISOString().slice(0,10))}else if(dt)t.due=d(dt);toast('Moved to '+fmt(t.due));render()}
+function wipCheck(o,then){const a=open().filter(t=>t.o===o);if(a.length<WIP)return then();
+ modal(`<h3>${o} already has ${a.length} open tasks (limit ${WIP})</h3><p class="src">Drop or re-date one before adding more.</p>
+ ${a.sort((x,y)=>score(x)-score(y)).map(t=>`<div class="task"><div class="t"><div class="ti">${t.t}</div><div class="meta">${dueTxt(t)} · score ${score(t)}</div></div><button class="btn s" onclick="wipAct(${t.id},'drop')">Drop</button> <button class="btn s" onclick="wipAct(${t.id},'later')">+7 days</button></div>`).join('')}
+ <div class="right"><button class="btn" onclick="close_()">Cancel</button></div>`);window._wipThen=then;window._wipO=o}
+function wipAct(i,a){const t=tasks.find(x=>x.id===i);if(a==='drop')t.st='done',t.dropped=1;else{const x=new Date(t.due<TODAY?TODAY:t.due);x.setDate(x.getDate()+7);t.due=d(x.toISOString().slice(0,10))}
+ if(a==='drop'&&open().filter(t=>t.o===window._wipO).length<WIP){close_();window._wipThen()}else if(a==='later'){toast('Re-dated: still '+open().filter(t=>t.o===window._wipO).length+' open. Drop one to add.');wipCheck(window._wipO,window._wipThen)}else wipCheck(window._wipO,window._wipThen)}
+function approve(i){const x=inbox.find(y=>y.id===i);wipCheck(x.o,()=>{tasks.push(T(x.t,x.o,null,x.c,x.due,{src:x.src,presence:!!x.presence}));inbox=inbox.filter(y=>y.id!==i);toast('Approved → added to '+x.o);render()})}
+function reject(i){inbox=inbox.filter(y=>y.id!==i);toast('Rejected');render()}
+function addTask(){modal(`<h3>${me()==='Narendra'?'New task':'Suggest a task (needs Narendra\'s approval)'}</h3><label>Task</label><input id="nt">
+ <div class="row"><div><label>Owner</label><select id="no">${PEOPLE.map(p=>`<option ${p===me()?'selected':''}>${p}</option>`)}</select></div><div><label>Goal</label><select id="ng"><option value="">None</option>${GOALS.map(g=>`<option>${g.id}</option>`)}</select></div></div>
+ <div class="row"><div><label>Priority</label><select id="nc"><option value="L">Leadership ask</option><option value="R">Revenue impact</option><option value="P">Platform deadline</option><option value="C">Store crisis</option></select></div><div><label>Due</label><input id="nd" type="date" value="${TODAY.toISOString().slice(0,10)}"></div></div>
+ <label><input type="checkbox" id="np" style="width:auto"> Presence only (no Impact Card needed)</label>
+ <label><input type="checkbox" id="na" style="width:auto"> 📎 Attachment required to close</label>
+ <div class="right"><button class="btn" onclick="close_()">Cancel</button><button class="btn p" onclick="saveT()">Save</button></div>`)}
+function saveT(){const g=k=>document.getElementById(k);if(!g('nt').value)return;const v={t:g('nt').value,o:g('no').value,gl:g('ng').value||null,c:g('nc').value,du:g('nd').value,p:g('np').checked,a:g('na').checked};close_();
+ if(me()==='Narendra')wipCheck(v.o,()=>{tasks.push(T(v.t,v.o,v.gl,v.c,v.du,{src:'Self',presence:v.p,needAtt:v.a}));toast('Added');render()});
+ else{inbox.push({id:Date.now(),t:v.t,o:v.o,c:v.c,due:v.du,src:'Team ('+me()+')',why:'Added by '+me(),presence:v.p});toast('Sent to Narendra for approval');render()}}
+function filt(q){q=q.toLowerCase();document.querySelectorAll('#it tr').forEach((r,i)=>{if(i)r.style.display=r.textContent.toLowerCase().includes(q)?'':'none'})}
+document.getElementById('me').onchange=render;document.getElementById('mo').onchange=e=>{mineOnly=e.target.checked;render()};window.onhashchange=render;render();boot();
+</script>
+</body>
+</html>
